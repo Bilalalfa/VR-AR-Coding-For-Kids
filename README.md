@@ -25,15 +25,15 @@ Proyek VR/AR untuk mengenalkan konsep pemrograman Python kepada anak-anak (8-15 
 
 ## Struktur Proyek
 /PyKids-VR-AR/
-├── .gitignore              <-- (Template Unity)
-├── README.md               <-- (Deskripsi proyek yang kita buat tadi)
-├── ProjectSettings/        <-- (Folder setting Unity, jangan diedit manual)
-├── Packages/               <-- (Daftar plugin Unity)
-└── Assets/                 <-- (Tempat kerja kalian)
-    ├── 01_Scenes/          <-- (Tempat Scene utama & Scene percobaan)
-    ├── 02_Scripts/         <-- (Asyraf: Logika C#)
-    ├── 03_UI_Interface/    <-- (Dhafin: Sprite, Font, Canvas)
-    ├── 04_3D_Models/       <-- (Bilal: FBX, Textures, Prefabs)
-    ├── 05_Media_Content/   <-- (Khofif: Video, PPT, Infografis)
-    ├── 06_Animations/      <-- (Animasi robot & UI)
-    └── 07_Plugins/         <-- (SDK: XR Interaction Toolkit, AI SDK)
+├── .gitignore              <-- Template Unity untuk mengabaikan file sampah
+├── README.md               <-- Dokumentasi dan panduan proyek
+├── ProjectSettings/        <-- Pengaturan internal Unity (jangan diedit manual)
+├── Packages/               <-- Daftar dependensi dan plugin Unity
+└── Assets/                 <-- Ruang kerja utama tim
+    ├── 01_Scenes/          <-- Scene utama & Scene eksperimen masing-masing
+    ├── 02_Scripts/         <-- Asyraf: Logika C# & Sistem Robot
+    ├── 03_UI_Interface/    <-- Dhafin: Sprite, Font, Canvas, & Modul AI Hint
+    ├── 04_3D_Models/       <-- Bilal: File FBX, Tekstur, & Prefab Lingkungan
+    ├── 05_Media_Content/   <-- Khofif: Video, PPT (PNG), & Infografis
+    ├── 06_Animations/      <-- Animasi untuk robot dan transisi UI
+    └── 07_Plugins/         <-- SDK: XR Interaction Toolkit & AI SDK
