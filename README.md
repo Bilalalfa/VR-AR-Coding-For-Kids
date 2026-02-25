@@ -22,3 +22,18 @@ Proyek VR/AR untuk mengenalkan konsep pemrograman Python kepada anak-anak (8-15 
 - Unity 2022.3 LTS (URP)
 - XR Interaction Toolkit
 - GitHub + Git LFS
+
+## Struktur Proyek
+/PyKids-VR-AR/
+├── .gitignore              <-- (Template Unity)
+├── README.md               <-- (Deskripsi proyek yang kita buat tadi)
+├── ProjectSettings/        <-- (Folder setting Unity, jangan diedit manual)
+├── Packages/               <-- (Daftar plugin Unity)
+└── Assets/                 <-- (Tempat kerja kalian)
+    ├── 01_Scenes/          <-- (Tempat Scene utama & Scene percobaan)
+    ├── 02_Scripts/         <-- (Asyraf: Logika C#)
+    ├── 03_UI_Interface/    <-- (Dhafin: Sprite, Font, Canvas)
+    ├── 04_3D_Models/       <-- (Bilal: FBX, Textures, Prefabs)
+    ├── 05_Media_Content/   <-- (Khofif: Video, PPT, Infografis)
+    ├── 06_Animations/      <-- (Animasi robot & UI)
+    └── 07_Plugins/         <-- (SDK: XR Interaction Toolkit, AI SDK)
