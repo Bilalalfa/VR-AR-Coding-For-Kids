@@ -5,7 +5,7 @@ Proyek VR/AR untuk mengenalkan konsep pemrograman Python kepada anak-anak (8-15 
 
 ## 🚀 Fitur Utama
 - **Learning Hub:** Materi Video, PPT, dan Infografis di setiap unit.
-- **Interactive Coding:** Game 1-level per unit dengan sistem drag-and-drop balok kode.
+- **Interactive Coding:** Game 1-level per unit dengan sistem gerak maju, kanan, kiri, looping.
 - **AI Hint:** Chatbot yang memberikan petunjuk jika pemain kesulitan.
 
 ## 👥 Anggota Tim
