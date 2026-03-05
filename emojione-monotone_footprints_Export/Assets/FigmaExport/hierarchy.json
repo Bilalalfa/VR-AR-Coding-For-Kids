@@ -1,0 +1,43 @@
+{
+  "id": "2285:404",
+  "name": "emojione-monotone:footprints",
+  "type": "FRAME",
+  "children": [
+    {
+      "id": "2285:405",
+      "name": "Vector",
+      "type": "VECTOR",
+      "children": [],
+      "components": [
+        {
+          "component": "RectTransform",
+          "width": 16.499893188476562,
+          "height": 22.4998722076416,
+          "x": 3.7500290870666504,
+          "y": -0.7499369978904724,
+          "rotation": 0
+        },
+        {
+          "component": "Image",
+          "sourceImage": "image_2285_405.png",
+          "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 1
+          }
+        }
+      ]
+    }
+  ],
+  "components": [
+    {
+      "component": "RectTransform",
+      "width": 24,
+      "height": 24,
+      "x": 89,
+      "y": -21,
+      "rotation": 0
+    }
+  ]
+}
