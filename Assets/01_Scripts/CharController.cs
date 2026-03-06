@@ -19,8 +19,13 @@ public class CharController : MonoBehaviour
     private GameObject koinDiBawahKaki = null;
     public int totalKoinDapat = 0;
 
+    // --- BUKU CATATAN KOIN ---
+    // Menyimpan daftar koin yang sudah diambil agar bisa dimunculkan lagi saat Reset
+    private List<GameObject> koinYangDiambil = new List<GameObject>();
+
     void Start()
     {
+        // Menyimpan titik awal kucing saat game dimulai
         posisiAwal = transform.position;
         rotasiAwal = transform.rotation;
     }
@@ -28,25 +33,28 @@ public class CharController : MonoBehaviour
     // --- SENSOR KAKI KUCING (TRIGGER) ---
     void OnTriggerEnter(Collider other)
     {
+        // CCTV: Laporan Kucing menabrak objek (Bisa dihapus jika Console sudah terlalu ramai)
+        Debug.Log($"👀 Kucing menyentuh: '{other.gameObject.name}' | Tag: '{other.tag}'");
+
         // Jika menginjak kotak Finish
         if (other.CompareTag("Finish"))
         {
             Debug.Log("🎉 MENANG! Kucing sampai di Garis Finish!");
-            if (efekMenang != null) efekMenang.Play(); // Ledakkan confetti!
+            if (efekMenang != null) efekMenang.Play();
         }
         // Jika menginjak Koin
-        else if (other.CompareTag("Coin"))
+        else if (other.CompareTag("Koin"))
         {
-            koinDiBawahKaki = other.gameObject; // Ingat koin ini!
+            koinDiBawahKaki = other.gameObject;
         }
     }
 
     void OnTriggerExit(Collider other)
     {
-        // Jika kucing melangkah pergi meninggalkan koin
+        // Jika kucing melangkah pergi meninggalkan koin tanpa mengambilnya
         if (other.CompareTag("Koin") && other.gameObject == koinDiBawahKaki)
         {
-            koinDiBawahKaki = null; // Lupakan koinnya
+            koinDiBawahKaki = null;
         }
     }
 
@@ -68,9 +76,9 @@ public class CharController : MonoBehaviour
             else if (cmd == CommandType.PutarKiri)
                 yield return StartCoroutine(Turn(-90f));
             else if (cmd == CommandType.AmbilKoin)
-                yield return StartCoroutine(AmbilKoin()); // Eksekusi aksi ambil koin
+                yield return StartCoroutine(AmbilKoin());
 
-            yield return new WaitForSeconds(0.2f);
+            yield return new WaitForSeconds(0.2f); // Jeda antar gerakan biar mulus
         }
         Debug.Log("🏁 Kucing Selesai Menjalankan Semua Perintah!");
     }
@@ -111,31 +119,50 @@ public class CharController : MonoBehaviour
         // Cek apakah ada koin di bawah kaki saat ini
         if (koinDiBawahKaki != null)
         {
-            Destroy(koinDiBawahKaki); // Hilangkan koinnya dari jalan
+            // 1. Sembunyikan koinnya (JANGAN DI-DESTROY!)
+            koinDiBawahKaki.SetActive(false);
+
+            // 2. Catat koin ini ke dalam memori agar bisa di-reset nanti
+            koinYangDiambil.Add(koinDiBawahKaki);
+
             koinDiBawahKaki = null;
             totalKoinDapat++;
             Debug.Log($"💰 Dring! Koin diambil! Total Koin: {totalKoinDapat}");
         }
         else
         {
-            Debug.LogWarning("❌ Gagal! Kucing mencoba mengambil koin, tapi tidak ada koin di tempat ini.");
+            Debug.LogWarning("❌ Gagal! Kucing mencoba mengambil koin, tapi tidak ada koin di bawah kakinya.");
         }
 
-        // Beri jeda sedikit agar aksi mengambil terlihat
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.5f); // Animasi jeda waktu ambil koin
     }
 
     // --- RESET ---
     public void ResetKarakter()
     {
         StopAllCoroutines();
+
+        // Kembalikan Kucing ke posisi awal
         transform.position = posisiAwal;
         transform.rotation = rotasiAwal;
-        totalKoinDapat = 0; // Reset koin saat ulang level
+        totalKoinDapat = 0;
         koinDiBawahKaki = null;
 
+        // --- BANGKITKAN KEMBALI SEMUA KOIN YANG SUDAH DIAMBIL ---
+        foreach (GameObject koin in koinYangDiambil)
+        {
+            if (koin != null)
+            {
+                koin.SetActive(true); // Munculkan kembali koinnya!
+            }
+        }
+        // Bersihkan buku catatan setelah semua koin dikembalikan
+        koinYangDiambil.Clear();
+        // ---------------------------------------------------------
+
+        // Matikan kembang api jika sedang menyala
         if (efekMenang != null) efekMenang.Stop();
 
-        Debug.Log("🐈 Kucing dikembalikan ke garis Start!");
+        Debug.Log("🐈 Kucing dikembalikan ke Start, dan semua Koin dimunculkan kembali!");
     }
 }
