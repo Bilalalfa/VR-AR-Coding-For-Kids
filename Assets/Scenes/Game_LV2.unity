@@ -502,8 +502,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveDistance: 1.17
   moveDuration: 0.5
+  tinggiLompatan: 0.5
   efekMenang: {fileID: 520027338}
   suaraKoin: {fileID: 8300000, guid: 8baacd3b048d51b4d8481664fc0b9355, type: 3}
+  efekAmbilKoinPrefab: {fileID: 0}
   totalKoinDapat: 0
 --- !u!54 &434666955
 Rigidbody:
@@ -2754,23 +2756,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6747429093595566741, guid: ffe3ead81ce7ccf429ced73a1970e8f7, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.4
+      value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 6747429093595566741, guid: ffe3ead81ce7ccf429ced73a1970e8f7, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.4
+      value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 6747429093595566741, guid: ffe3ead81ce7ccf429ced73a1970e8f7, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.4
+      value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 6747429093595566741, guid: ffe3ead81ce7ccf429ced73a1970e8f7, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.502
+      value: 2.488
       objectReference: {fileID: 0}
     - target: {fileID: 6747429093595566741, guid: ffe3ead81ce7ccf429ced73a1970e8f7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.331
+      value: 1.261
       objectReference: {fileID: 0}
     - target: {fileID: 6747429093595566741, guid: ffe3ead81ce7ccf429ced73a1970e8f7, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2829,15 +2831,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4356027162270234622, guid: 027f06047940fa64a939335f6822587e, type: 3}
       propertyPath: m_LocalScale.x
-      value: 30.000002
+      value: 25
       objectReference: {fileID: 0}
     - target: {fileID: 4356027162270234622, guid: 027f06047940fa64a939335f6822587e, type: 3}
       propertyPath: m_LocalScale.y
-      value: 30.000002
+      value: 25
       objectReference: {fileID: 0}
     - target: {fileID: 4356027162270234622, guid: 027f06047940fa64a939335f6822587e, type: 3}
       propertyPath: m_LocalScale.z
-      value: 30.000002
+      value: 25
       objectReference: {fileID: 0}
     - target: {fileID: 4356027162270234622, guid: 027f06047940fa64a939335f6822587e, type: 3}
       propertyPath: m_LocalPosition.x

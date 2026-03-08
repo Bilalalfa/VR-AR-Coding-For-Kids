@@ -3687,6 +3687,14 @@ PrefabInstance:
       propertyPath: efekMenang
       value: 
       objectReference: {fileID: 592089082}
+    - target: {fileID: 6097865608755062325, guid: b8c3bcf808db4bc40bf0604fa80c96b9, type: 3}
+      propertyPath: moveDuration
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6097865608755062325, guid: b8c3bcf808db4bc40bf0604fa80c96b9, type: 3}
+      propertyPath: tinggiLompatan
+      value: 0.5
+      objectReference: {fileID: 0}
     - target: {fileID: 7795157059936001196, guid: b8c3bcf808db4bc40bf0604fa80c96b9, type: 3}
       propertyPath: m_Name
       value: Character

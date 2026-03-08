@@ -4,17 +4,17 @@ using UnityEngine;
 
 public class CharController : MonoBehaviour
 {
-    [Header("Pengaturan Grid (Tile Size)")]
+    [Header("Pengaturan Grid & Gerakan")]
     public float moveDistance = 1f;
     public float moveDuration = 0.5f;
 
-    [Header("Efek Kemenangan")]
-    public ParticleSystem efekMenang;
+    [Tooltip("Atur seberapa tinggi efek pantulan kucing saat melangkah maju")]
+    public float tinggiLompatan = 1.0f; // Bisa Anda kecilkan jadi 0.5 jika dirasa terlalu tinggi
 
-    [Header("Efek Koin")]
-    [Tooltip("Masukkan file suara (.mp3/.wav) ke sini")]
+    [Header("Efek Visual & Suara")]
+    public ParticleSystem efekMenang;
     public AudioClip suaraKoin;
-    // (Efek visual koin dihilangkan agar skrip lebih bersih dan stabil)
+    public GameObject efekAmbilKoinPrefab;
 
     private Vector3 posisiAwal;
     private Quaternion rotasiAwal;
@@ -33,7 +33,6 @@ public class CharController : MonoBehaviour
         rotasiAwal = transform.rotation;
         rb = GetComponent<Rigidbody>();
 
-        // Paksa matikan efek menang di awal game
         if (efekMenang != null)
         {
             efekMenang.gameObject.SetActive(false);
@@ -70,34 +69,42 @@ public class CharController : MonoBehaviour
 
     private IEnumerator ExecuteProgramCoroutine(List<CommandType> program)
     {
-        // 🔴 UPDATE: Menggunakan For-Loop untuk mengecek apakah ini balok terakhir
         for (int i = 0; i < program.Count; i++)
         {
             CommandType cmd = program[i];
 
             if (isJatuh) break;
 
-            if (cmd == CommandType.Maju)
+            switch (cmd)
             {
-                yield return StartCoroutine(MoveForward());
-                yield return StartCoroutine(CekJurang());
-            }
-            else if (cmd == CommandType.PutarKanan)
-                yield return StartCoroutine(Turn(90f));
-            else if (cmd == CommandType.PutarKiri)
-                yield return StartCoroutine(Turn(-90f));
-            else if (cmd == CommandType.AmbilKoin)
-                yield return StartCoroutine(AmbilKoin());
+                case CommandType.Maju:
+                    yield return StartCoroutine(MoveForward());
+                    yield return StartCoroutine(CekJurang());
+                    break;
 
-            // Beri jeda 0.2 detik HANYA JIKA ini BUKAN perintah terakhir.
-            // Jika ini perintah terakhir, langsung lompat ke evaluasi akhir (instan)!
+                case CommandType.PutarKanan:
+                    yield return StartCoroutine(Turn(90f));
+                    break;
+
+                case CommandType.PutarKiri:
+                    yield return StartCoroutine(Turn(-90f));
+                    break;
+
+                case CommandType.AmbilKoin:
+                    yield return StartCoroutine(AmbilKoin());
+                    break;
+
+                    // (Perintah Lompat khusus sudah dihapus sesuai permintaan)
+            }
+
+            // Jeda antar perintah (kecuali balok terakhir)
             if (i < program.Count - 1)
             {
                 yield return new WaitForSeconds(0.2f);
             }
         }
 
-        // --- EVALUASI AKHIR (Dieksekusi tanpa delay) ---
+        // --- EVALUASI AKHIR ---
         if (!isJatuh)
         {
             if (sudahMenang)
@@ -116,6 +123,7 @@ public class CharController : MonoBehaviour
         }
     }
 
+    // --- SENSOR JURANG ---
     private IEnumerator CekJurang()
     {
         bool adaLantai = false;
@@ -145,6 +153,7 @@ public class CharController : MonoBehaviour
         }
     }
 
+    // --- GERAKAN MAJU (SEKARANG DENGAN EFEK LOMPAT / BOUNCE) ---
     private IEnumerator MoveForward()
     {
         Vector3 startPos = transform.position;
@@ -153,13 +162,27 @@ public class CharController : MonoBehaviour
 
         while (elapsedTime < moveDuration)
         {
-            transform.position = Vector3.Lerp(startPos, endPos, elapsedTime / moveDuration);
+            // Hitung persentase waktu dari 0.0 ke 1.0
+            float persentase = elapsedTime / moveDuration;
+
+            // Hitung posisi mendatar (maju lurus)
+            Vector3 posisiSaatIni = Vector3.Lerp(startPos, endPos, persentase);
+
+            // 🔴 SUNTIKAN EFEK LOMPAT: Tambahkan ketinggian melengkung (parabola) dengan rumus Sinus
+            posisiSaatIni.y += Mathf.Sin(persentase * Mathf.PI) * tinggiLompatan;
+
+            // Terapkan posisi ke tubuh Kucing
+            transform.position = posisiSaatIni;
+
             elapsedTime += Time.deltaTime;
             yield return null;
         }
+
+        // Pastikan mendarat persis di titik akhir
         transform.position = endPos;
     }
 
+    // --- GERAKAN PUTAR ---
     private IEnumerator Turn(float angle)
     {
         Quaternion startRot = transform.rotation;
@@ -175,6 +198,7 @@ public class CharController : MonoBehaviour
         transform.rotation = endRot;
     }
 
+    // --- AMBIL KOIN ---
     private IEnumerator AmbilKoin()
     {
         if (koinDiBawahKaki != null)
@@ -182,6 +206,13 @@ public class CharController : MonoBehaviour
             if (suaraKoin != null)
             {
                 AudioSource.PlayClipAtPoint(suaraKoin, transform.position);
+            }
+
+            if (efekAmbilKoinPrefab != null)
+            {
+                GameObject efekLedakan = Instantiate(efekAmbilKoinPrefab, koinDiBawahKaki.transform.position, Quaternion.identity);
+                efekLedakan.SetActive(true);
+                Destroy(efekLedakan, 2f);
             }
 
             koinDiBawahKaki.SetActive(false);
@@ -194,6 +225,7 @@ public class CharController : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
     }
 
+    // --- RESET GAME ---
     public void ResetKarakter()
     {
         StopAllCoroutines();
