@@ -4,86 +4,156 @@ using UnityEngine;
 
 public class CharController : MonoBehaviour
 {
-    [Header("Pengaturan Grid (Tile Size)")]
+    [Header("Pengaturan Grid & Gerakan")]
     public float moveDistance = 1f;
     public float moveDuration = 0.5f;
 
-    [Header("Efek Visual (Opsional)")]
-    [Tooltip("Tarik partikel kembang api/confetti ke sini")]
+    [Tooltip("Atur seberapa tinggi efek pantulan kucing saat melangkah maju")]
+    public float tinggiLompatan = 1.0f; // Bisa Anda kecilkan jadi 0.5 jika dirasa terlalu tinggi
+
+    [Header("Efek Visual & Suara")]
     public ParticleSystem efekMenang;
+    public AudioClip suaraKoin;
+    public GameObject efekAmbilKoinPrefab;
 
     private Vector3 posisiAwal;
     private Quaternion rotasiAwal;
+    private Rigidbody rb;
 
-    // Memori untuk mengingat koin mana yang sedang diinjak
     private GameObject koinDiBawahKaki = null;
     public int totalKoinDapat = 0;
-
-    // --- BUKU CATATAN KOIN ---
-    // Menyimpan daftar koin yang sudah diambil agar bisa dimunculkan lagi saat Reset
     private List<GameObject> koinYangDiambil = new List<GameObject>();
+
+    private bool sudahMenang = false;
+    private bool isJatuh = false;
 
     void Start()
     {
-        // Menyimpan titik awal kucing saat game dimulai
         posisiAwal = transform.position;
         rotasiAwal = transform.rotation;
+        rb = GetComponent<Rigidbody>();
+
+        if (efekMenang != null)
+        {
+            efekMenang.gameObject.SetActive(false);
+        }
     }
 
-    // --- SENSOR KAKI KUCING (TRIGGER) ---
     void OnTriggerEnter(Collider other)
     {
-        // CCTV: Laporan Kucing menabrak objek (Bisa dihapus jika Console sudah terlalu ramai)
-        Debug.Log($"👀 Kucing menyentuh: '{other.gameObject.name}' | Tag: '{other.tag}'");
-
-        // Jika menginjak kotak Finish
-        if (other.CompareTag("Finish"))
-        {
-            Debug.Log("🎉 MENANG! Kucing sampai di Garis Finish!");
-            if (efekMenang != null) efekMenang.Play();
-        }
-        // Jika menginjak Koin
-        else if (other.CompareTag("Koin"))
-        {
-            koinDiBawahKaki = other.gameObject;
-        }
+        if (other.CompareTag("Finish")) sudahMenang = true;
+        else if (other.CompareTag("Koin")) koinDiBawahKaki = other.gameObject;
     }
 
     void OnTriggerExit(Collider other)
     {
-        // Jika kucing melangkah pergi meninggalkan koin tanpa mengambilnya
-        if (other.CompareTag("Koin") && other.gameObject == koinDiBawahKaki)
-        {
-            koinDiBawahKaki = null;
-        }
+        if (other.CompareTag("Finish")) sudahMenang = false;
+        else if (other.CompareTag("Koin") && other.gameObject == koinDiBawahKaki) koinDiBawahKaki = null;
     }
 
-    // --- SISTEM EKSEKUSI ---
     public void StartExecution(List<CommandType> program)
     {
         StopAllCoroutines();
+        sudahMenang = false;
+        isJatuh = false;
+
+        if (rb != null)
+        {
+            rb.isKinematic = true;
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
         StartCoroutine(ExecuteProgramCoroutine(program));
     }
 
     private IEnumerator ExecuteProgramCoroutine(List<CommandType> program)
     {
-        foreach (CommandType cmd in program)
+        for (int i = 0; i < program.Count; i++)
         {
-            if (cmd == CommandType.Maju)
-                yield return StartCoroutine(MoveForward());
-            else if (cmd == CommandType.PutarKanan)
-                yield return StartCoroutine(Turn(90f));
-            else if (cmd == CommandType.PutarKiri)
-                yield return StartCoroutine(Turn(-90f));
-            else if (cmd == CommandType.AmbilKoin)
-                yield return StartCoroutine(AmbilKoin());
+            CommandType cmd = program[i];
 
-            yield return new WaitForSeconds(0.2f); // Jeda antar gerakan biar mulus
+            if (isJatuh) break;
+
+            switch (cmd)
+            {
+                case CommandType.Maju:
+                    yield return StartCoroutine(MoveForward());
+                    yield return StartCoroutine(CekJurang());
+                    break;
+
+                case CommandType.PutarKanan:
+                    yield return StartCoroutine(Turn(90f));
+                    break;
+
+                case CommandType.PutarKiri:
+                    yield return StartCoroutine(Turn(-90f));
+                    break;
+
+                case CommandType.AmbilKoin:
+                    yield return StartCoroutine(AmbilKoin());
+                    break;
+
+                    // (Perintah Lompat khusus sudah dihapus sesuai permintaan)
+            }
+
+            // Jeda antar perintah (kecuali balok terakhir)
+            if (i < program.Count - 1)
+            {
+                yield return new WaitForSeconds(0.2f);
+            }
         }
-        Debug.Log("🏁 Kucing Selesai Menjalankan Semua Perintah!");
+
+        // --- EVALUASI AKHIR ---
+        if (!isJatuh)
+        {
+            if (sudahMenang)
+            {
+                Debug.Log("🎉 MENANG!");
+                if (efekMenang != null)
+                {
+                    efekMenang.gameObject.SetActive(true);
+                    efekMenang.Play();
+                }
+            }
+            else
+            {
+                Debug.Log("❌ GAGAL: Berhenti sebelum Finish.");
+            }
+        }
     }
 
-    // --- LOGIKA AKSI ---
+    // --- SENSOR JURANG ---
+    private IEnumerator CekJurang()
+    {
+        bool adaLantai = false;
+        Vector3 titikLangit = transform.position + Vector3.up * 3f;
+        RaycastHit[] semuaTabrakan = Physics.SphereCastAll(titikLangit, 0.3f, Vector3.down, 5f, -1, QueryTriggerInteraction.Collide);
+
+        foreach (RaycastHit hit in semuaTabrakan)
+        {
+            if (hit.collider.transform.IsChildOf(this.transform) || hit.collider.gameObject == this.gameObject) continue;
+            if (hit.collider.CompareTag("Koin")) continue;
+
+            if (hit.collider.CompareTag("Jalan") || hit.collider.CompareTag("Finish"))
+            {
+                adaLantai = true;
+                break;
+            }
+        }
+
+        if (!adaLantai)
+        {
+            Debug.LogWarning("⚠️ JATUH!");
+            isJatuh = true;
+            sudahMenang = false;
+            if (rb != null) rb.isKinematic = false;
+            yield return new WaitForSeconds(1.5f);
+            ResetKarakter();
+        }
+    }
+
+    // --- GERAKAN MAJU (SEKARANG DENGAN EFEK LOMPAT / BOUNCE) ---
     private IEnumerator MoveForward()
     {
         Vector3 startPos = transform.position;
@@ -92,13 +162,27 @@ public class CharController : MonoBehaviour
 
         while (elapsedTime < moveDuration)
         {
-            transform.position = Vector3.Lerp(startPos, endPos, elapsedTime / moveDuration);
+            // Hitung persentase waktu dari 0.0 ke 1.0
+            float persentase = elapsedTime / moveDuration;
+
+            // Hitung posisi mendatar (maju lurus)
+            Vector3 posisiSaatIni = Vector3.Lerp(startPos, endPos, persentase);
+
+            // 🔴 SUNTIKAN EFEK LOMPAT: Tambahkan ketinggian melengkung (parabola) dengan rumus Sinus
+            posisiSaatIni.y += Mathf.Sin(persentase * Mathf.PI) * tinggiLompatan;
+
+            // Terapkan posisi ke tubuh Kucing
+            transform.position = posisiSaatIni;
+
             elapsedTime += Time.deltaTime;
             yield return null;
         }
+
+        // Pastikan mendarat persis di titik akhir
         transform.position = endPos;
     }
 
+    // --- GERAKAN PUTAR ---
     private IEnumerator Turn(float angle)
     {
         Quaternion startRot = transform.rotation;
@@ -114,55 +198,64 @@ public class CharController : MonoBehaviour
         transform.rotation = endRot;
     }
 
+    // --- AMBIL KOIN ---
     private IEnumerator AmbilKoin()
     {
-        // Cek apakah ada koin di bawah kaki saat ini
         if (koinDiBawahKaki != null)
         {
-            // 1. Sembunyikan koinnya (JANGAN DI-DESTROY!)
+            if (suaraKoin != null)
+            {
+                AudioSource.PlayClipAtPoint(suaraKoin, transform.position);
+            }
+
+            if (efekAmbilKoinPrefab != null)
+            {
+                GameObject efekLedakan = Instantiate(efekAmbilKoinPrefab, koinDiBawahKaki.transform.position, Quaternion.identity);
+                efekLedakan.SetActive(true);
+                Destroy(efekLedakan, 2f);
+            }
+
             koinDiBawahKaki.SetActive(false);
-
-            // 2. Catat koin ini ke dalam memori agar bisa di-reset nanti
             koinYangDiambil.Add(koinDiBawahKaki);
-
             koinDiBawahKaki = null;
             totalKoinDapat++;
-            Debug.Log($"💰 Dring! Koin diambil! Total Koin: {totalKoinDapat}");
-        }
-        else
-        {
-            Debug.LogWarning("❌ Gagal! Kucing mencoba mengambil koin, tapi tidak ada koin di bawah kakinya.");
+            Debug.Log($"💰 Koin diambil! Total: {totalKoinDapat}");
         }
 
-        yield return new WaitForSeconds(0.5f); // Animasi jeda waktu ambil koin
+        yield return new WaitForSeconds(0.5f);
     }
 
-    // --- RESET ---
+    // --- RESET GAME ---
     public void ResetKarakter()
     {
         StopAllCoroutines();
 
-        // Kembalikan Kucing ke posisi awal
+        if (rb != null)
+        {
+            rb.isKinematic = true;
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
         transform.position = posisiAwal;
         transform.rotation = rotasiAwal;
         totalKoinDapat = 0;
         koinDiBawahKaki = null;
+        sudahMenang = false;
+        isJatuh = false;
 
-        // --- BANGKITKAN KEMBALI SEMUA KOIN YANG SUDAH DIAMBIL ---
         foreach (GameObject koin in koinYangDiambil)
         {
-            if (koin != null)
-            {
-                koin.SetActive(true); // Munculkan kembali koinnya!
-            }
+            if (koin != null) koin.SetActive(true);
         }
-        // Bersihkan buku catatan setelah semua koin dikembalikan
         koinYangDiambil.Clear();
-        // ---------------------------------------------------------
 
-        // Matikan kembang api jika sedang menyala
-        if (efekMenang != null) efekMenang.Stop();
+        if (efekMenang != null)
+        {
+            efekMenang.Stop();
+            efekMenang.gameObject.SetActive(false);
+        }
 
-        Debug.Log("🐈 Kucing dikembalikan ke Start, dan semua Koin dimunculkan kembali!");
+        Debug.Log("🐈 Kucing di-reset!");
     }
 }
