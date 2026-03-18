@@ -37,3 +37,6 @@ Proyek VR/AR untuk mengenalkan konsep pemrograman Python kepada anak-anak (8-15 
     ├── 05_Media_Content/   <-- Khofif: Video, PPT (PNG), & Infografis
     ├── 06_Animations/      <-- Animasi untuk robot dan transisi UI
     └── 07_Plugins/         <-- SDK: XR Interaction Toolkit & AI SDK
+
+
+## Semangat ya guys
